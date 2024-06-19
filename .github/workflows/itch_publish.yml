@@ -27,7 +27,7 @@ jobs:
       - name: Upload ${{ matrix.preset }} to itch.io project
         uses: robpc/itchio-upload-action@v1
         with:
-          path: /
+          path: ./
           project: ${{ env.itchio_project }}
           channel: ${{ env.itchio_channel }}
           version: ${{ env.version }}
