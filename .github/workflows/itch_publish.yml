@@ -17,4 +17,4 @@ jobs:
                   CHANNEL: HTML
                   ITCH_GAME: lyagj
                   ITCH_USER: chowieuk
-                  PACKAGE: build/
+                  PACKAGE: build
