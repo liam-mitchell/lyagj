@@ -3,7 +3,7 @@ name: Deploy
 on: push
 env:
     ITCH_USERNAME: chowieuk
-    ITCH_GAME_ID: lyagj
+    ITCH_GAME_ID: amomo
 jobs:
     deploy:
         runs-on: ubuntu-latest
@@ -20,6 +20,6 @@ jobs:
               env:
                   BUTLER_CREDENTIALS: ${{ secrets.ITCHIO_API_KEY }}
                   CHANNEL: HTML
-                  ITCH_GAME: lyagj
+                  ITCH_GAME: amomo
                   ITCH_USER: chowieuk
                   PACKAGE: ./build.zip
