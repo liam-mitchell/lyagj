@@ -2,12 +2,12 @@ let smiley;
 
 function setup() 
 {
-    new Canvas();
+    new Canvas(1920, 1080, 'fullscreen');
 
     let background = new Sprite();
 
     background.width = 10000;
-    background.height = 1000;
+    background.height = 1080;
     background.image = 'assets/images/background.png';
     background.collider = 'none';
 
