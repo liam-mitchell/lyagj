@@ -23,3 +23,5 @@ jobs:
                   ITCH_GAME: lyagj
                   ITCH_USER: chowieuk
                   PACKAGE: ./build.zip
+            - name: Check status
+              run: butler status chowieuk/lyagj:HTML
