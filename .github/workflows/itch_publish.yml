@@ -1,34 +1,20 @@
-name: Release
+name: Deploy
 
+on: push
 env:
-  itchio_project: chowieuk/lyagj
-  itchio_channel: HTML
-
-on:
-  push:
-    # tags:
-    #   - v*
-
+    ITCH_USERNAME: chowieuk
+    ITCH_GAME_ID: lyagj
 jobs:
-  exports:
-    name: Build, Release, and Upload
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
-        with:
-          lfs: true
-      # - name: Build
-      #   # Replace with your own build process
-      #   run: make build
-      - name: Set Version
-        run: |
-          echo "version=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
-      - name: Upload ${{ matrix.preset }} to itch.io project
-        uses: robpc/itchio-upload-action@v1
-        with:
-          path: ./
-          project: ${{ env.itchio_project }}
-          channel: ${{ env.itchio_channel }}
-          version: ${{ env.version }}
-          api-key: ${{ secrets.ITCHIO_API_KEY }}
+    deploy:
+        runs-on: ubuntu-latest
+        name: Deploy to Itch.io
+        strategy:
+            fail-fast: true
+        steps:
+            - uses: manleydev/butler-publish-itchio-action@master
+              env:
+                  BUTLER_CREDENTIALS: ${{ secrets.ITCHIO_API_KEY }}
+                  CHANNEL: HTML
+                  ITCH_GAME: lyagj
+                  ITCH_USER: chowieuk
+                  PACKAGE: build/windows
