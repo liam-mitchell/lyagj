@@ -13,6 +13,8 @@ jobs:
         steps:
             - name: Check out repository
               uses: actions/checkout@v4
+            - name: Archive build
+              run: git archive --format=zip --output ./build.zip master
             - name: Upload to Itch
               uses: manleydev/butler-publish-itchio-action@master
               env:
@@ -20,4 +22,4 @@ jobs:
                   CHANNEL: HTML
                   ITCH_GAME: lyagj
                   ITCH_USER: chowieuk
-                  PACKAGE: build/index.html
+                  PACKAGE: ./build.zip
