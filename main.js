@@ -1,4 +1,4 @@
-let smiley;
+let crow;
 let hud;
 let swooping = false;
 let leveling = false;
@@ -44,23 +44,24 @@ function setup() {
     hud.h = 150;
     hud.layer = 2;
 
-    smiley = new Sprite();
+    crow = new Sprite();
 
-    smiley.width = 100;
-    smiley.height = 100;
-    smiley.image = 'assets/images/smiley.png';
-    smiley.x = 100;
-    smiley.y = 500;
-    smiley.collider = 'kinematic';
+    crow.width = 100;
+    crow.height = 100;
+    crow.x = 100;
+    crow.y = 500;
+    crow.collider = 'kinematic';
 
-    smiley.addAni('fly', [
+    crow.addAni('fly', [
         'assets/images/crow-flying-1.png',
         'assets/images/crow-flying-2.png',
         'assets/images/crow-flying-3.png',
         'assets/images/crow-flying-2.png',
     ]);
 
-    smiley.changeAni('fly');
+    crow.addAni('dive', ['assets/images/crow-flying-3.png']);
+
+    crow.changeAni('fly');
 
     coin = new Sprite();
     coin.width = 12;
@@ -70,23 +71,23 @@ function setup() {
     coin.y = 1000;
 }
 
-function updateBird() {
+function updateCrow() {
     if (kb.pressing('right')) {
-        smiley.vel.x = 10;
-        smiley.mirror.x = false;
+        crow.vel.x = 10;
+        crow.mirror.x = false;
     } else if (kb.pressing('left')) {
-        smiley.vel.x = -10;
-        smiley.mirror.x = true;
+        crow.vel.x = -10;
+        crow.mirror.x = true;
     } else {
-        smiley.vel.x = 0;
+        crow.vel.x = 0;
     }
 
     if (kb.pressing('up')) {
-        smiley.vel.y = -10;
+        crow.vel.y = -10;
     } else if (kb.pressing('down')) {
-        smiley.vel.y = 10;
+        crow.vel.y = 10;
     } else {
-        smiley.vel.y = 0;
+        crow.vel.y = 0;
     }
 
     if (kb.presses(' ') && !swooping) {
@@ -96,49 +97,61 @@ function updateBird() {
 
     if (swooping) {
         let framesElapsed = frameCount - frameStart;
-        // smiley.vel.x = speedX;
-        if (framesElapsed <= totalFrames) {
-            // Calculate position in the cosine arc
 
-            heading = {
-                x: smiley.x + 60,
-                y:
-                    smiley.y +
-                    swoopDepth * cos((180 * framesElapsed) / totalFrames),
-            };
-            smiley.rotateTowards(heading, 0.1);
-            smiley.moveTowards(heading);
-            console.log(
-                `rotation: ${smiley.rotation}
-dx: ${smiley.vel.x.toFixed(3)}
-dy: ${smiley.vel.y.toFixed(3)}
-x: ${smiley.x}
-y: ${smiley.y}
-`
+        if (
+            framesElapsed <= totalFrames * 0.5 &&
+            framesElapsed >= totalFrames * 0.1
+        ) {
+            crow.changeAni('dive');
+        } else {
+            crow.changeAni('fly');
+        }
+        if (framesElapsed <= totalFrames) {
+            // Create heading using position in the cosine arc
+            heading = createVector(
+                crow.mirror.x ? crow.x - 60 : crow.x + 60,
+                crow.y + swoopDepth * cos((180 * framesElapsed) / totalFrames)
             );
 
-            hud.text = `x: ${smiley.x.toFixed(0)}, y: ${smiley.y.toFixed(
-                0
-            )}\ndx: ${smiley.vel.x.toFixed(3)}, dy: ${smiley.vel.y.toFixed(3)}`;
+            // Rotate and head towards the heading depending on position in the arc
+            crow.rotateTowards(
+                framesElapsed <= totalFrames * 0.6
+                    ? heading
+                    : createVector(
+                          crow.mirror.x ? heading.x - 600 : crow.x + 600,
+                          heading.y
+                      ),
+                0.1,
+                !crow.mirror.x ? 0 : 180
+            );
+            crow.moveTowards(heading);
+            console.log(
+                `rotation: ${crow.rotation}
+dx: ${crow.vel.x.toFixed(3)}
+dy: ${crow.vel.y.toFixed(3)}
+x: ${crow.x}
+y: ${crow.y}
+`
+            );
         } else {
             hud.text = 'leveling out';
             // Stop the swoop after the duration is over
-            smiley.rotateTo(0, 4);
+            crow.rotateMinTo(0, 4);
             swooping = false;
         }
     }
 
-    camera.x = smiley.x;
+    camera.x = crow.x;
 }
 
 function updateInventory() {
-    if (smiley.overlaps(coin)) {
+    if (crow.overlaps(coin)) {
         inventory = coin;
     }
 
     if (inventory) {
-        inventory.x = smiley.x + (smiley.mirror.x? -70 : 70);
-        inventory.y = smiley.y;
+        inventory.x = crow.x + (crow.mirror.x? -70 : 70);
+        inventory.y = crow.y;
     }
 
     if (kb.pressed(DROP_KEY) && inventory) {
@@ -149,9 +162,14 @@ function updateInventory() {
 function draw() {
     clear();
     camera.on();
-    updateBird();
+    updateCrow();
     updateInventory();
     camera.off();
     background('white');
+    hud.text = `rotation: ${crow.rotation.toFixed(0)}\nx: ${crow.x.toFixed(
+        0
+    )}, y: ${crow.y.toFixed(0)}\ndx: ${crow.vel.x.toFixed(
+        3
+    )}, dy: ${crow.vel.y.toFixed(3)}`;
     hud.draw();
 }
