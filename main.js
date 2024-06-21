@@ -80,12 +80,12 @@ function updateBird() {
             // Calculate position in the cosine arc
 
             heading = {
-                x: smiley.x + 60,
+                x: smiley.mirror.x ? smiley.x - 60 : smiley.x + 60,
                 y:
                     smiley.y +
                     swoopDepth * cos((180 * framesElapsed) / totalFrames),
             };
-            smiley.rotateTowards(heading, 0.1);
+            smiley.rotateTowards(heading, 0.1, !smiley.mirror.x ? 0 : 180);
             smiley.moveTowards(heading);
             console.log(
                 `rotation: ${smiley.rotation}
@@ -95,14 +95,10 @@ x: ${smiley.x}
 y: ${smiley.y}
 `
             );
-
-            hud.text = `x: ${smiley.x.toFixed(0)}, y: ${smiley.y.toFixed(
-                0
-            )}\ndx: ${smiley.vel.x.toFixed(3)}, dy: ${smiley.vel.y.toFixed(3)}`;
         } else {
             hud.text = 'leveling out';
             // Stop the swoop after the duration is over
-            smiley.rotateTo(0, 4);
+            smiley.rotateMinTo(0, 4);
             swooping = false;
         }
     }
@@ -116,5 +112,10 @@ function draw() {
     updateBird();
     camera.off();
     background('white');
+    hud.text = `rotation: ${smiley.rotation.toFixed(0)}\nx: ${smiley.x.toFixed(
+        0
+    )}, y: ${smiley.y.toFixed(0)}\ndx: ${smiley.vel.x.toFixed(
+        3
+    )}, dy: ${smiley.vel.y.toFixed(3)}`;
     hud.draw();
 }
