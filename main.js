@@ -7,6 +7,10 @@ let swoopDepth = 180; // Amplitude of the swoop
 let speedX = 20; // Horizontal speed during swoop
 let totalFrames = 60; // Total frames to complete the swoop
 
+let coin;
+let inventory;
+let DROP_KEY = 'x';
+
 function setup() {
     new Canvas(1920, 1080, 'fullscreen');
 
@@ -18,7 +22,16 @@ function setup() {
     background.collider = 'none';
     background.layer = 1;
 
+    let floor = new Sprite();
+    floor.width = 10000;
+    floor.height = 10;
+    floor.color = 'blue';
+    floor.y = 1070;
+    floor.collider = 'static';
+
     hud = new Sprite();
+
+    world.gravity.y = 10;
 
     hud.collider = 'none';
     hud.color = 'blue';
@@ -38,6 +51,7 @@ function setup() {
     smiley.image = 'assets/images/smiley.png';
     smiley.x = 100;
     smiley.y = 500;
+    smiley.collider = 'kinematic';
 
     smiley.addAni('fly', [
         'assets/images/crow-flying-1.png',
@@ -47,6 +61,13 @@ function setup() {
     ]);
 
     smiley.changeAni('fly');
+
+    coin = new Sprite();
+    coin.width = 12;
+    coin.height = 12;
+    coin.image = 'assets/images/coin.png';
+    coin.x = 200;
+    coin.y = 1000;
 }
 
 function updateBird() {
@@ -110,10 +131,26 @@ y: ${smiley.y}
     camera.x = smiley.x;
 }
 
+function updateInventory() {
+    if (smiley.overlaps(coin)) {
+        inventory = coin;
+    }
+
+    if (inventory) {
+        inventory.x = smiley.x + (smiley.mirror.x? -70 : 70);
+        inventory.y = smiley.y;
+    }
+
+    if (kb.pressed(DROP_KEY) && inventory) {
+        inventory = null;
+    }
+}
+
 function draw() {
     clear();
     camera.on();
     updateBird();
+    updateInventory();
     camera.off();
     background('white');
     hud.draw();
