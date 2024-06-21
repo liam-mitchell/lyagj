@@ -87,15 +87,23 @@ function updateCrow() {
             crow.changeAni('fly');
         }
         if (framesElapsed <= totalFrames) {
-            // Calculate position in the cosine arc
+            // Create heading using position in the cosine arc
+            heading = createVector(
+                crow.mirror.x ? crow.x - 60 : crow.x + 60,
+                crow.y + swoopDepth * cos((180 * framesElapsed) / totalFrames)
+            );
 
-            heading = {
-                x: crow.mirror.x ? crow.x - 60 : crow.x + 60,
-                y:
-                    crow.y +
-                    swoopDepth * cos((180 * framesElapsed) / totalFrames),
-            };
-            crow.rotateTowards(heading, 0.1, !crow.mirror.x ? 0 : 180);
+            // Rotate and head towards the heading depending on position in the arc
+            crow.rotateTowards(
+                framesElapsed <= totalFrames * 0.6
+                    ? heading
+                    : createVector(
+                          crow.mirror.x ? heading.x - 600 : crow.x + 600,
+                          heading.y
+                      ),
+                0.1,
+                !crow.mirror.x ? 0 : 180
+            );
             crow.moveTowards(heading);
             console.log(
                 `rotation: ${crow.rotation}
