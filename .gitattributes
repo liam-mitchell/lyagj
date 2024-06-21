@@ -1,2 +1,8 @@
 # git-archive: ignore .gitignore, .gitattributes, .github/ etc. 
 .git* export-ignore
+README.md export-ignore
+# already ignored, so maybe unnecessary?
+# node_modules/ export-ignore
+# .prettierrc export-ignore
+# package* export-ignore
+# jsconfig.json export-ignore
