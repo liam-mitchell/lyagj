@@ -18,6 +18,15 @@ function setup()
     smiley.image = 'assets/images/smiley.png';
     smiley.x = 100;
     smiley.y = 500;
+
+    smiley.addAni('fly', [
+        'assets/images/crow-flying-1.png', 
+        'assets/images/crow-flying-2.png', 
+        'assets/images/crow-flying-3.png',  
+        'assets/images/crow-flying-2.png'
+    ]);
+
+    smiley.changeAni('fly');
 }
 
 function draw()
@@ -27,10 +36,12 @@ function draw()
     if (kb.pressing('right'))
     {
         smiley.vel.x = 10;
+        smiley.mirror.x = false;
     }
     else if (kb.pressing('left'))
     {
         smiley.vel.x = -10;
+        smiley.mirror.x = true;
     }
     else
     {
