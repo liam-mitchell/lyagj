@@ -11,6 +11,13 @@ let coin;
 let inventory;
 let DROP_KEY = 'x';
 
+let STATE_PICKING_UP = 'pickup';
+let STATE_DEFAULT = 'default';
+let girl;
+let girlReaction;
+
+let girlState = STATE_DEFAULT;
+
 function setup() {
     new Canvas(1920, 1080, 'fullscreen');
 
@@ -31,7 +38,7 @@ function setup() {
 
     hud = new Sprite();
 
-    world.gravity.y = 10;
+    world.gravity.y = 100;
 
     hud.collider = 'none';
     hud.color = 'blue';
@@ -69,6 +76,13 @@ function setup() {
     coin.image = 'assets/images/coin.png';
     coin.x = 200;
     coin.y = 1000;
+
+    girl = new Sprite();
+    girl.width = 200;
+    girl.height = 200;
+    girl.image = 'assets/images/girl.png';
+    girl.x = 1000;
+    girl.y = 860;
 }
 
 function updateCrow() {
@@ -152,10 +166,39 @@ function updateInventory() {
     if (inventory) {
         inventory.x = crow.x + (crow.mirror.x? -70 : 70);
         inventory.y = crow.y;
+        inventory.vel.y = 0;
+        inventory.vel.x = 0;
     }
 
     if (kb.pressed(DROP_KEY) && inventory) {
         inventory = null;
+    }
+}
+
+function updateGirl() {
+    if (girl.overlaps(coin)) {
+        girlState = STATE_DEFAULT;
+        girlReaction.remove();
+        coin.remove();
+    } else if (abs(girl.x - coin.x) < 200 && coin.y > girl.y) {
+        girl.moveTo(coin.x, girl.y, 5);
+
+        if (girlState != STATE_PICKING_UP) {
+            girlState = STATE_PICKING_UP;
+            girlReaction = new Sprite();
+            girlReaction.image = 'assets/images/reaction-exclamation.png';
+            girlReaction.width = 50;
+            girlReaction.height = 50;
+
+            if (coin.x < girl.x) {
+                girl.mirror.x = true;
+            }
+        }
+
+        if (girlReaction) {
+            girlReaction.x = girl.x + girlReaction.width;
+            girlReaction.y = girl.y - girlReaction.height;
+        }
     }
 }
 
@@ -164,6 +207,7 @@ function draw() {
     camera.on();
     updateCrow();
     updateInventory();
+    updateGirl();
     camera.off();
     background('white');
     hud.text = `rotation: ${crow.rotation.toFixed(0)}\nx: ${crow.x.toFixed(
