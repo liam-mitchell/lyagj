@@ -2,3 +2,5 @@ node_modules
 .prettierrc
 package*
 jsconfig.json
+.parcel-cache
+/dist

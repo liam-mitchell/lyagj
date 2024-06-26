@@ -1,3 +1,6 @@
+/**
+ * @type {Sprite}
+ */
 let crow;
 let hud;
 let swooping = false;
@@ -6,7 +9,9 @@ let frameStart = 0; // To track the start frame of the swoop
 let swoopDepth = 180; // Amplitude of the swoop
 let speedX = 20; // Horizontal speed during swoop
 let totalFrames = 60; // Total frames to complete the swoop
-
+/**
+ * @type {Sprite}
+ */
 let coin;
 let inventory;
 let DROP_KEY = 'x';
@@ -18,14 +23,20 @@ let girlReaction;
 
 let girlState = STATE_DEFAULT;
 
+let nestTree;
+
+let twig;
+
+const sidewalkY = 950;
+
 function setup() {
     new Canvas(1920, 1080, 'fullscreen');
 
     let background = new Sprite();
 
-    background.width = 10000;
+    background.width = 3240;
     background.height = 1080;
-    background.image = 'assets/images/background.png';
+    background.image = 'assets/images/background-stripped.png';
     background.collider = 'none';
     background.layer = 1;
 
@@ -33,7 +44,7 @@ function setup() {
     floor.width = 10000;
     floor.height = 10;
     floor.color = 'blue';
-    floor.y = 1070;
+    floor.y = sidewalkY;
     floor.collider = 'static';
 
     hud = new Sprite();
@@ -75,14 +86,26 @@ function setup() {
     coin.height = 12;
     coin.image = 'assets/images/coin.png';
     coin.x = 200;
-    coin.y = 1000;
+    coin.y = sidewalkY - coin.height / 2;
 
     girl = new Sprite();
     girl.width = 200;
-    girl.height = 200;
+    // girl.height = 200;
     girl.image = 'assets/images/girl.png';
     girl.x = 1000;
-    girl.y = 860;
+    girl.y = sidewalkY - girl.height / 2;
+
+    nestTree = new Sprite();
+    nestTree.image = 'assets/images/nest-tree.png';
+    nestTree.height = 313;
+    nestTree.x = 0;
+    nestTree.y = sidewalkY - nestTree.height / 2;
+
+    twig = new Sprite();
+    twig.image = 'assets/images/twig.png';
+    twig.height = 40;
+    twig.x = 100;
+    twig.y = sidewalkY - twig.height / 2;
 }
 
 function updateCrow() {
@@ -158,13 +181,13 @@ y: ${crow.y}
     camera.x = crow.x;
 }
 
-function updateInventory() {
+function updateInventory(pickupables) {
     if (crow.overlaps(coin)) {
         inventory = coin;
     }
 
     if (inventory) {
-        inventory.x = crow.x + (crow.mirror.x? -70 : 70);
+        inventory.x = crow.x + (crow.mirror.x ? -70 : 70);
         inventory.y = crow.y;
         inventory.vel.y = 0;
         inventory.vel.x = 0;
