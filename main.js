@@ -25,7 +25,20 @@ let girlState = STATE_DEFAULT;
 
 let nestTree;
 
-let twig;
+/**
+ * @type {Group}
+ */
+let pickupables;
+
+/**
+ * @type {Group}
+ */
+let twigs;
+
+/**
+ * @type {Group}
+ */
+let coins;
 
 const sidewalkY = 950;
 
@@ -81,13 +94,6 @@ function setup() {
 
     crow.changeAni('fly');
 
-    coin = new Sprite();
-    coin.width = 12;
-    coin.height = 12;
-    coin.image = 'assets/images/coin.png';
-    coin.x = 200;
-    coin.y = sidewalkY - coin.height / 2;
-
     girl = new Sprite();
     girl.width = 200;
     // girl.height = 200;
@@ -101,11 +107,35 @@ function setup() {
     nestTree.x = 0;
     nestTree.y = sidewalkY - nestTree.height / 2;
 
-    twig = new Sprite();
-    twig.image = 'assets/images/twig.png';
-    twig.height = 40;
-    twig.x = 100;
-    twig.y = sidewalkY - twig.height / 2;
+    pickupables = new Group();
+
+    twigs = new pickupables.Group();
+    twigs.image = 'assets/images/twig2.png';
+    twigs.width = 16;
+    twigs.height = 40;
+    twigs.rotation = () => (round(random(0, 1)) % 2 == true ? 0 : 180);
+    console.log(twigs.rotation);
+    twigs.x = () => random(0, canvas.w);
+    twigs.y = sidewalkY - twigs.height / 2;
+    twigs.amount = 10;
+
+    pickupables.add();
+
+    coins = new pickupables.Group();
+
+    coins.width = 12;
+    coins.height = 12;
+    coins.image = 'assets/images/coin.png';
+    coins.x = () => random(0, canvas.w);
+    coins.y = sidewalkY - coins.height / 2;
+    coins.amount = 5;
+
+    coin = new Sprite();
+    coin.width = 12;
+    coin.height = 12;
+    coin.image = 'assets/images/coin.png';
+    coin.x = 200;
+    coin.y = sidewalkY - coin.height / 2;
 }
 
 function updateCrow() {
@@ -181,10 +211,8 @@ y: ${crow.y}
     camera.x = crow.x;
 }
 
-function updateInventory(pickupables) {
-    if (crow.overlaps(coin)) {
-        inventory = coin;
-    }
+function updateInventory() {
+    crow.overlaps(pickupables, collect);
 
     if (inventory) {
         inventory.x = crow.x + (crow.mirror.x ? -70 : 70);
@@ -196,6 +224,13 @@ function updateInventory(pickupables) {
     if (kb.pressed(DROP_KEY) && inventory) {
         inventory = null;
     }
+}
+
+function collect(crow, item) {
+    if (inventory) {
+        return;
+    }
+    inventory = item;
 }
 
 function updateGirl() {
