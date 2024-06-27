@@ -47,6 +47,8 @@ const sidewalkY = 950;
  */
 let nestBox;
 
+let nestMeter = 0;
+
 function setup() {
     new Canvas(1920, 1080, 'fullscreen');
 
@@ -78,7 +80,6 @@ function setup() {
     hud.y = 25;
     hud.w = 500;
     hud.h = 150;
-    hud.layer = 2;
 
     nestTree = new Sprite();
     nestTree.collider = 'kinematic';
@@ -154,6 +155,18 @@ function setup() {
     coin.image = 'assets/images/coin.png';
     coin.x = 200;
     coin.y = sidewalkY - coin.height / 2;
+}
+
+function updateNest() {
+    nestBox.overlaps(twigs, handleNewTwig);
+
+    function handleNewTwig(crow, item) {
+        inventory = null;
+        item.remove();
+        nestMeter += 1;
+        console.log(nestMeter);
+        // update nestBox Sprite
+    }
 }
 
 function updateCrow() {
@@ -286,6 +299,7 @@ function draw() {
     updateCrow();
     updateInventory();
     updateGirl();
+    updateNest();
     camera.off();
     background('white');
     hud.text = `rotation: ${crow.rotation.toFixed(0)}\nx: ${crow.x.toFixed(
