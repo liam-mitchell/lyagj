@@ -42,6 +42,11 @@ let coins;
 
 const sidewalkY = 950;
 
+/**
+ * @type {Sprite}
+ */
+let nestBox;
+
 function setup() {
     new Canvas(1920, 1080, 'fullscreen');
 
@@ -75,6 +80,25 @@ function setup() {
     hud.h = 150;
     hud.layer = 2;
 
+    nestTree = new Sprite();
+    nestTree.collider = 'kinematic';
+    nestTree.image = 'assets/images/nest-tree.png';
+    nestTree.height = 313;
+    nestTree.x = 0;
+    nestTree.y = sidewalkY - nestTree.height / 2;
+
+    nestBox = new Sprite();
+
+    nestBox.overlaps(nestTree);
+    nestBox.collider = 'kinematic';
+    nestBox.x = nestTree.x;
+    nestBox.y = nestTree.y - 70;
+    nestBox.width = 64;
+    nestBox.height = 54;
+
+    nestBox.strokeColor = 'red';
+    nestBox.fill = (255, 0, 0, 255);
+
     crow = new Sprite();
 
     crow.width = 100;
@@ -100,12 +124,6 @@ function setup() {
     girl.image = 'assets/images/girl.png';
     girl.x = 1000;
     girl.y = sidewalkY - girl.height / 2;
-
-    nestTree = new Sprite();
-    nestTree.image = 'assets/images/nest-tree.png';
-    nestTree.height = 313;
-    nestTree.x = 0;
-    nestTree.y = sidewalkY - nestTree.height / 2;
 
     pickupables = new Group();
 
@@ -215,6 +233,7 @@ function updateInventory() {
     crow.overlaps(pickupables, collect);
 
     if (inventory) {
+        inventory.collider = 'kinematic';
         inventory.x = crow.x + (crow.mirror.x ? -70 : 70);
         inventory.y = crow.y;
         inventory.vel.y = 0;
@@ -222,6 +241,7 @@ function updateInventory() {
     }
 
     if (kb.pressed(DROP_KEY) && inventory) {
+        inventory.collider = 'dynamic';
         inventory = null;
     }
 }
