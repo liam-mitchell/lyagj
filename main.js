@@ -29,10 +29,13 @@ let twig;
 
 const sidewalkY = 950;
 
-function setup() {
-    new Canvas(1920, 1080, 'fullscreen');
+let background;
+let canvas;
 
-    let background = new Sprite();
+function setup() {
+    canvas = new Canvas(1920, 1080, 'fullscreen');
+
+    background = new Sprite();
 
     background.width = 3240;
     background.height = 1080;
@@ -41,7 +44,7 @@ function setup() {
     background.layer = 1;
 
     let floor = new Sprite();
-    floor.width = 10000;
+    floor.width = background.width;
     floor.height = 10;
     floor.color = 'blue';
     floor.y = sidewalkY;
@@ -66,9 +69,11 @@ function setup() {
 
     crow.width = 100;
     crow.height = 100;
-    crow.x = 100;
+    crow.x = window.canvas.clientWidth / 2;
     crow.y = 500;
     crow.collider = 'kinematic';
+
+    camera.x = crow.x;
 
     crow.addAni('fly', [
         'assets/images/crow-flying-1.png',
@@ -90,10 +95,11 @@ function setup() {
 
     girl = new Sprite();
     girl.width = 200;
-    // girl.height = 200;
+    girl.height = 200;
     girl.image = 'assets/images/girl.png';
     girl.x = 1000;
     girl.y = sidewalkY - girl.height / 2;
+    girl.collider = 'kinematic';
 
     nestTree = new Sprite();
     nestTree.image = 'assets/images/nest-tree.png';
@@ -178,7 +184,13 @@ y: ${crow.y}
         }
     }
 
-    camera.x = crow.x;
+    // TODO(lmitchell): make this dynamic based on background size
+    let lbound = 300;
+    let rbound = 1600;
+
+    if (crow.x > lbound && crow.x < rbound) {
+        camera.x = crow.x;
+    }
 }
 
 function updateInventory(pickupables) {
@@ -199,11 +211,11 @@ function updateInventory(pickupables) {
 }
 
 function updateGirl() {
-    if (girl.overlaps(coin)) {
+    if (girl.overlapping(coin) && girlState == STATE_PICKING_UP) {
         girlState = STATE_DEFAULT;
         girlReaction.remove();
         coin.remove();
-    } else if (abs(girl.x - coin.x) < 200 && coin.y > girl.y) {
+    } else if (abs(girl.x - coin.x) < 200 && coin.y > girl.y && inventory != coin) {
         girl.moveTo(coin.x, girl.y, 5);
 
         if (girlState != STATE_PICKING_UP) {
@@ -232,7 +244,6 @@ function draw() {
     updateInventory();
     updateGirl();
     camera.off();
-    background('white');
     hud.text = `rotation: ${crow.rotation.toFixed(0)}\nx: ${crow.x.toFixed(
         0
     )}, y: ${crow.y.toFixed(0)}\ndx: ${crow.vel.x.toFixed(
