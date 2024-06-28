@@ -25,15 +25,32 @@ let girlState = STATE_DEFAULT;
 
 let nestTree;
 
-let twig;
+/**
+ * @type {Group}
+ */
+let pickupables;
+
+/**
+ * @type {Group}
+ */
+let twigs;
+
+/**
+ * @type {Group}
+ */
+let coins;
 
 const sidewalkY = 950;
 
-let background;
-let canvas;
+/**
+ * @type {Sprite}
+ */
+let nestBox;
+
+let nestMeter = 0;
 
 function setup() {
-    canvas = new Canvas(1920, 1080, 'fullscreen');
+    new Canvas(1920, 1080, 'fullscreen');
 
     background = new Sprite();
 
@@ -63,7 +80,25 @@ function setup() {
     hud.y = 25;
     hud.w = 500;
     hud.h = 150;
-    hud.layer = 2;
+
+    nestTree = new Sprite();
+    nestTree.collider = 'kinematic';
+    nestTree.image = 'assets/images/nest-tree.png';
+    nestTree.height = 313;
+    nestTree.x = 0;
+    nestTree.y = sidewalkY - nestTree.height / 2;
+
+    nestBox = new Sprite();
+
+    nestBox.overlaps(nestTree);
+    nestBox.collider = 'kinematic';
+    nestBox.x = nestTree.x;
+    nestBox.y = nestTree.y - 70;
+    nestBox.width = 64;
+    nestBox.height = 54;
+
+    nestBox.strokeColor = 'red';
+    nestBox.fill = (255, 0, 0, 255);
 
     crow = new Sprite();
 
@@ -86,13 +121,6 @@ function setup() {
 
     crow.changeAni('fly');
 
-    coin = new Sprite();
-    coin.width = 12;
-    coin.height = 12;
-    coin.image = 'assets/images/coin.png';
-    coin.x = 200;
-    coin.y = sidewalkY - coin.height / 2;
-
     girl = new Sprite();
     girl.width = 200;
     girl.height = 200;
@@ -101,17 +129,47 @@ function setup() {
     girl.y = sidewalkY - girl.height / 2;
     girl.collider = 'kinematic';
 
-    nestTree = new Sprite();
-    nestTree.image = 'assets/images/nest-tree.png';
-    nestTree.height = 313;
-    nestTree.x = 0;
-    nestTree.y = sidewalkY - nestTree.height / 2;
+    pickupables = new Group();
 
-    twig = new Sprite();
-    twig.image = 'assets/images/twig.png';
-    twig.height = 40;
-    twig.x = 100;
-    twig.y = sidewalkY - twig.height / 2;
+    twigs = new pickupables.Group();
+    twigs.image = 'assets/images/twig2.png';
+    twigs.width = 16;
+    twigs.height = 40;
+    twigs.rotation = () => (round(random(0, 1)) % 2 == true ? 0 : 180);
+    console.log(twigs.rotation);
+    twigs.x = () => random(0, canvas.w);
+    twigs.y = sidewalkY - twigs.height / 2;
+    twigs.amount = 10;
+
+    pickupables.add();
+
+    coins = new pickupables.Group();
+
+    coins.width = 12;
+    coins.height = 12;
+    coins.image = 'assets/images/coin.png';
+    coins.x = () => random(0, canvas.w);
+    coins.y = sidewalkY - coins.height / 2;
+    coins.amount = 5;
+
+    coin = new Sprite();
+    coin.width = 12;
+    coin.height = 12;
+    coin.image = 'assets/images/coin.png';
+    coin.x = 200;
+    coin.y = sidewalkY - coin.height / 2;
+}
+
+function updateNest() {
+    nestBox.overlaps(twigs, handleNewTwig);
+
+    function handleNewTwig(crow, item) {
+        inventory = null;
+        item.remove();
+        nestMeter += 1;
+        console.log(nestMeter);
+        // update nestBox Sprite
+    }
 }
 
 function updateCrow() {
@@ -193,12 +251,11 @@ y: ${crow.y}
     }
 }
 
-function updateInventory(pickupables) {
-    if (crow.overlaps(coin)) {
-        inventory = coin;
-    }
+function updateInventory() {
+    crow.overlaps(pickupables, collect);
 
     if (inventory) {
+        inventory.collider = 'kinematic';
         inventory.x = crow.x + (crow.mirror.x ? -70 : 70);
         inventory.y = crow.y;
         inventory.vel.y = 0;
@@ -206,8 +263,16 @@ function updateInventory(pickupables) {
     }
 
     if (kb.pressed(DROP_KEY) && inventory) {
+        inventory.collider = 'dynamic';
         inventory = null;
     }
+}
+
+function collect(crow, item) {
+    if (inventory) {
+        return;
+    }
+    inventory = item;
 }
 
 function updateGirl() {
@@ -243,6 +308,7 @@ function draw() {
     updateCrow();
     updateInventory();
     updateGirl();
+    updateNest();
     camera.off();
     hud.text = `rotation: ${crow.rotation.toFixed(0)}\nx: ${crow.x.toFixed(
         0
