@@ -3,19 +3,24 @@
  */
 let crow;
 let hud;
-let swooping = false;
-let leveling = false;
-let frameStart = 0; // To track the start frame of the swoop
-let swoopDepth = 180; // Amplitude of the swoop
-let speedX = 20; // Horizontal speed during swoop
-let totalFrames = 60; // Total frames to complete the swoop
+
+let SWOOP_START_FRAME = 0; // To track the start frame of the swoop
+let SWOOP_DEPTH = 180; // Amplitude of the swoop
+let SWOOP_X_VELOCITY = 20; // Horizontal velocity during swoop
+let SWOOP_LENGTH_FRAMES = 60; // Total frames to complete the swoop
 /**
  * @type {Sprite}
  */
 let coin;
 let inventory;
 let DROP_KEY = 'x';
+let SWOOP_KEY = ' ';
+let POOP_KEY = 'c';
 
+let POOP_RATE = 20; // Minimum number of frames between poops
+
+let STATE_SWOOPING = false;
+let STATE_POOPING = false;
 let STATE_PICKING_UP = 'pickup';
 let STATE_DEFAULT = 'default';
 let girl;
@@ -191,32 +196,34 @@ function updateCrow() {
         crow.vel.y = 0;
     }
 
-    if (kb.presses(' ') && !swooping) {
-        frameStart = frameCount; // Mark the start of the swoop
-        swooping = true;
+    if (kb.presses(SWOOP_KEY) && !STATE_SWOOPING) {
+        SWOOP_START_FRAME = frameCount; // Mark the start of the swoop
+        STATE_SWOOPING = true;
     }
 
-    if (swooping) {
-        let framesElapsed = frameCount - frameStart;
+    if (STATE_SWOOPING) {
+        let framesElapsed = frameCount - SWOOP_START_FRAME;
 
         if (
-            framesElapsed <= totalFrames * 0.5 &&
-            framesElapsed >= totalFrames * 0.1
+            framesElapsed <= SWOOP_LENGTH_FRAMES * 0.5 &&
+            framesElapsed >= SWOOP_LENGTH_FRAMES * 0.1
         ) {
             crow.changeAni('dive');
         } else {
             crow.changeAni('fly');
         }
-        if (framesElapsed <= totalFrames) {
+        if (framesElapsed <= SWOOP_LENGTH_FRAMES) {
             // Create heading using position in the cosine arc
             heading = createVector(
                 crow.mirror.x ? crow.x - 60 : crow.x + 60,
-                crow.y + swoopDepth * cos((180 * framesElapsed) / totalFrames)
+                crow.y +
+                    SWOOP_DEPTH *
+                        cos((180 * framesElapsed) / SWOOP_LENGTH_FRAMES)
             );
 
             // Rotate and head towards the heading depending on position in the arc
             crow.rotateTowards(
-                framesElapsed <= totalFrames * 0.6
+                framesElapsed <= SWOOP_LENGTH_FRAMES * 0.6
                     ? heading
                     : createVector(
                           crow.mirror.x ? heading.x - 600 : crow.x + 600,
@@ -226,20 +233,25 @@ function updateCrow() {
                 !crow.mirror.x ? 0 : 180
             );
             crow.moveTowards(heading);
-            console.log(
-                `rotation: ${crow.rotation}
-dx: ${crow.vel.x.toFixed(3)}
-dy: ${crow.vel.y.toFixed(3)}
-x: ${crow.x}
-y: ${crow.y}
-`
-            );
+            //             console.log(
+            //                 `rotation: ${crow.rotation}
+            // dx: ${crow.vel.x.toFixed(3)}
+            // dy: ${crow.vel.y.toFixed(3)}
+            // x: ${crow.x}
+            // y: ${crow.y}
+            // `
+            //             );
         } else {
             hud.text = 'leveling out';
             // Stop the swoop after the duration is over
             crow.rotateMinTo(0, 4);
-            swooping = false;
+            STATE_SWOOPING = false;
         }
+    }
+
+    if (kb.presses(POOP_KEY) && !STATE_POOPING) {
+        SWOOP_START_FRAME = frameCount; // Mark the start of the poop
+        STATE_POOPING = true;
     }
 
     // TODO(lmitchell): make this dynamic based on background size
@@ -280,7 +292,11 @@ function updateGirl() {
         girlState = STATE_DEFAULT;
         girlReaction.remove();
         coin.remove();
-    } else if (abs(girl.x - coin.x) < 200 && coin.y > girl.y && inventory != coin) {
+    } else if (
+        abs(girl.x - coin.x) < 200 &&
+        coin.y > girl.y &&
+        inventory != coin
+    ) {
         girl.moveTo(coin.x, girl.y, 5);
 
         if (girlState != STATE_PICKING_UP) {
