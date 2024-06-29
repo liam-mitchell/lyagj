@@ -4,9 +4,11 @@
 let crow;
 let hud;
 
+const SIDEWALK_Y = 950;
+
 let SWOOP_START_FRAME = 0; // To track the start frame of the swoop
 let SWOOP_DEPTH = 180; // Amplitude of the swoop
-let SWOOP_X_VELOCITY = 20; // Horizontal velocity during swoop
+let SWOOP_X_HEADING_OFFSET = 120; // Affects horizontal velocity during swoop
 let SWOOP_LENGTH_FRAMES = 60; // Total frames to complete the swoop
 /**
  * @type {Sprite}
@@ -18,6 +20,7 @@ let SWOOP_KEY = ' ';
 let POOP_KEY = 'c';
 
 let POOP_RATE = 20; // Minimum number of frames between poops
+let POOP_START_FRAME = 0; // To track the start frame of the poop
 
 let STATE_SWOOPING = false;
 let STATE_POOPING = false;
@@ -45,7 +48,10 @@ let twigs;
  */
 let coins;
 
-const sidewalkY = 950;
+/**
+ * @type {Group}
+ */
+let poops;
 
 /**
  * @type {Sprite}
@@ -69,7 +75,7 @@ function setup() {
     floor.width = background.width;
     floor.height = 10;
     floor.color = 'blue';
-    floor.y = sidewalkY;
+    floor.y = SIDEWALK_Y;
     floor.collider = 'static';
 
     hud = new Sprite();
@@ -91,7 +97,7 @@ function setup() {
     nestTree.image = 'assets/images/nest-tree.png';
     nestTree.height = 313;
     nestTree.x = 0;
-    nestTree.y = sidewalkY - nestTree.height / 2;
+    nestTree.y = SIDEWALK_Y - nestTree.height / 2;
 
     nestBox = new Sprite();
 
@@ -131,7 +137,7 @@ function setup() {
     girl.height = 200;
     girl.image = 'assets/images/girl.png';
     girl.x = 1000;
-    girl.y = sidewalkY - girl.height / 2;
+    girl.y = SIDEWALK_Y - girl.height / 2;
     girl.collider = 'kinematic';
 
     pickupables = new Group();
@@ -143,10 +149,8 @@ function setup() {
     twigs.rotation = () => (round(random(0, 1)) % 2 == true ? 0 : 180);
     console.log(twigs.rotation);
     twigs.x = () => random(0, canvas.w);
-    twigs.y = sidewalkY - twigs.height / 2;
+    twigs.y = SIDEWALK_Y - twigs.height / 2;
     twigs.amount = 10;
-
-    pickupables.add();
 
     coins = new pickupables.Group();
 
@@ -154,7 +158,7 @@ function setup() {
     coins.height = 12;
     coins.image = 'assets/images/coin.png';
     coins.x = () => random(0, canvas.w);
-    coins.y = sidewalkY - coins.height / 2;
+    coins.y = SIDEWALK_Y - coins.height / 2;
     coins.amount = 5;
 
     coin = new Sprite();
@@ -162,7 +166,17 @@ function setup() {
     coin.height = 12;
     coin.image = 'assets/images/coin.png';
     coin.x = 200;
-    coin.y = sidewalkY - coin.height / 2;
+    coin.y = SIDEWALK_Y - coin.height / 2;
+
+    poops = new Group();
+
+    poops.width = 12;
+    poops.height = 12;
+    poops.image = 'assets/images/poop1.png';
+
+    poops.collide(floor, (poops, poop) => {
+        poops.remove(poop);
+    });
 }
 
 function updateNest() {
@@ -215,7 +229,9 @@ function updateCrow() {
         if (framesElapsed <= SWOOP_LENGTH_FRAMES) {
             // Create heading using position in the cosine arc
             heading = createVector(
-                crow.mirror.x ? crow.x - 60 : crow.x + 60,
+                crow.mirror.x
+                    ? crow.x - SWOOP_X_HEADING_OFFSET
+                    : crow.x + SWOOP_X_HEADING_OFFSET,
                 crow.y +
                     SWOOP_DEPTH *
                         cos((180 * framesElapsed) / SWOOP_LENGTH_FRAMES)
@@ -250,8 +266,26 @@ function updateCrow() {
     }
 
     if (kb.presses(POOP_KEY) && !STATE_POOPING) {
-        SWOOP_START_FRAME = frameCount; // Mark the start of the poop
+        POOP_START_FRAME = frameCount; // Mark the start of the pooping
         STATE_POOPING = true;
+
+        let poop = new Sprite();
+        poop.x = crow.mirror.x
+            ? crow.x + crow.width * 0.3
+            : crow.x - crow.width * 0.3;
+        poop.y = crow.y;
+        poop.width = 24;
+        poop.height = 24;
+        poop.image = 'assets/images/poop1.png';
+        poops.add(poop);
+    }
+
+    if (STATE_POOPING) {
+        let framesElapsed = frameCount - POOP_START_FRAME;
+
+        if (framesElapsed >= POOP_RATE) {
+            STATE_POOPING = false;
+        }
     }
 
     // TODO(lmitchell): make this dynamic based on background size
